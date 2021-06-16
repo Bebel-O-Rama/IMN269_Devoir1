@@ -1,18 +1,15 @@
 from numpy import array
 from PIL import Image
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import cv2
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def get_image():
+    image_name = input("Enter the name of a image in the folder \"Perspective\" : ")
+    if image_name == "":
+        image_name = "P5150542.JPG"
+    return __file__[:-7] + "Images/Perspective/" + image_name
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+im_1 = Image.open(get_image())
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+im_1.show()
