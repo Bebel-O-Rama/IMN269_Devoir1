@@ -20,7 +20,7 @@ def apply_trans_to_image(image: np.array, matrix: np.array):
     for x in range(len(image)):
 
         for y in range(len(image[x])):
-            temp1, temp2, temp3 = np.matmul(matrix, ([x, y, 1]))
+            temp1, temp2, temp3 = np.matmul(([x, y, 1]), matrix)
             temp1 = math.floor((temp1/temp3))
             temp2 = math.floor((temp2/temp3))
             #print(temp1, temp2)
@@ -31,7 +31,7 @@ def apply_trans_to_image(image: np.array, matrix: np.array):
 
 im_1 = cv2.imread(get_image())
 
-matrix1 = np.array([[1, 0, 0], [0, 1, 0], [5, 19, 3]])
+matrix1 = np.array([[1, 0, 0], [0, 1, 0], [0.5, 0.5, 1]])
 
 test = apply_trans_to_image(im_1, matrix1)
 
