@@ -41,24 +41,41 @@ def get_tf_matrix():
     # print(vanishing_line)
     #
     # print(line1)
+    div = 150
+    point1a = 315/div
+    point1b = 11/div
+    point2a = 102/div
+    point2b = 172/div
+    point3a = 301/div
+    point3b = 236/div
+    point4a = 108/div
+    point4b = 287/div
+    point5a = 315/div
+    point5b = 11/div
+    point6a = 500/div
+    point6b = 175/div
+    point7a = 332/div
+    point7b = 316/div
+    point8a = 500/div
+    point8b = 328/div
 
     # TEST
-    point1a = 79/100
-    point1b = 247/100
-    point2a = 231/100
-    point2b = 85/100
-    point3a = 92/100
-    point3b = 347/100
-    point4a = 224/100
-    point4b = 378/100
-    point5a = 450/100
-    point5b = 172/100
-    point6a = 231/100
-    point6b = 85/100
-    point7a = 392/100
-    point7b = 364/100
-    point8a = 266/100
-    point8b = 373/100
+    # point1a = 79/100
+    # point1b = 247/100
+    # point2a = 231/100
+    # point2b = 85/100
+    # point3a = 92/100
+    # point3b = 347/100
+    # point4a = 224/100
+    # point4b = 378/100
+    # point5a = 450/100
+    # point5b = 172/100
+    # point6a = 231/100
+    # point6b = 85/100
+    # point7a = 392/100
+    # point7b = 364/100
+    # point8a = 266/100
+    # point8b = 373/100
     #
     line1 = np.cross([point1a, point1b, 1], [point2a, point2b, 1])
     line2 = np.cross([point3a, point3b, 1], [point4a, point4b, 1])
@@ -74,67 +91,75 @@ def get_tf_matrix():
     print(vanishing_point2)
     vanishing_line = np.cross(vanishing_point1, vanishing_point2)
     print(vanishing_line)
-    vanishing_line = [abs(vanishing_line[0]/vanishing_line[2]), abs(vanishing_line[1]/vanishing_line[2]), abs(vanishing_line[2]/vanishing_line[2])]
+    vanishing_line = [vanishing_line[0]*(-1), vanishing_line[1]*(-1), abs(vanishing_line[2]*(-1))]
+    # vanishing_line = vanishing_line/vanishing_line[2]
     H = array([[1, 0, 0], [0, 1, 0], vanishing_line])
     print(H)
     return H
 
 def get_image():
-    image_name = input("Enter the name of a image in the folder \"Perspective\" : ")
-    if image_name == "":
-        image_name = "maison.jpg"
+    # image_name = input("Enter the name of a image in the folder \"Perspective\" : ")
+    # if image_name == "":
+    image_name = "beau_cube.jpg"
     return __file__[:-7] + "Images/Perspective/" + image_name
 
 def apply_trans_to_image(image: np.array, matrix: np.array):
-    y1, x1, z1 = np.shape(image)
-    x_new_image_size = math.floor(x1 * matrix[2, 1]) + x1 + 1
-    y_new_image_size = math.floor(y1 * matrix[2, 0]) + y1 + 1
+    x1, y1, z1 = np.shape(image)
+    x_new_image_size = math.floor(((x1 * matrix[2, 0]) + x1)/matrix[2, 2]) + 1
+    y_new_image_size = math.floor(((y1 * matrix[2, 1]) + y1)/matrix[2, 2]) + 1
 
-    output = np.zeros((y_new_image_size, x_new_image_size, z1), image.dtype)
+    print(x_new_image_size)
+    print(y_new_image_size)
+    rangevar = range(len(image))
+    rangevar0 = range(len(image[0]))
+    output = np.zeros((x_new_image_size, y_new_image_size, z1), image.dtype)
 
     for x in range(len(image)):
         for y in range(len(image[0])):
-            temp = [(matrix[2, 0] * x) + x, (matrix[2, 1]*y) + y, matrix[2, 2]]
+            temp = [(matrix[2, 0] * x + x)/matrix[2, 2], (matrix[2, 1] * y + y)/matrix[2, 2], matrix[2, 2]]
             output[math.floor(temp[0]), math.floor(temp[1])] = image[x, y]
 
-    for x in range(len(output)):
-        for y in range(len(output[0])):
-            if not np.all(output[x, y, [0, 0, 0]]):
-                lock_down = y != 0
-                lock_left = x != 0
-                lock_up = y < x_new_image_size - 1
-                lock_right = x < y_new_image_size - 1
+            # if math.floor(temp[0]) < 600 and math.floor(temp[1]) < 400:
+            #     output[x, y] = image[math.floor(temp[0]), math.floor(temp[1])]
 
-                list_average = []
-                lock_down and lock_left and np.all(output[x-1, y-1, [0, 0, 0]]) and list_average.append(output[x-1, y-1])
-                lock_down and np.all(output[x, y-1, [0]] != [0, 0, 0]) and list_average.append(output[x, y-1])
-                lock_down and lock_right and np.all(output[x+1, y-1, [0, 0, 0]]) and list_average.append(output[x+1, y-1])
-                lock_left and np.all(output[x-1, y, [0, 0, 0]]) and list_average.append(output[x-1, y])
-                lock_right and np.all(output[x+1, y, [0, 0, 0]]) and list_average.append(output[x+1, y])
-                lock_up and lock_left and np.all(output[x-1, y+1, [0, 0, 0]]) and list_average.append(output[x-1, y+1])
-                lock_up and np.all(output[x, y+1, [0, 0, 0]]) and list_average.append(output[x, y+1])
-                lock_up and lock_right and np.all(output[x+1, y+1, [0, 0, 0]]) and list_average.append(output[x+1, y+1])
+    # for x in range(len(output)):
+    #     for y in range(len(output[0])):
+    #         if not np.all(output[x, y, [0, 0, 0]]):
+    #             lock_down = y != 0
+    #             lock_left = x != 0
+    #             lock_up = y < x_new_image_size - 1
+    #             lock_right = x < y_new_image_size - 1
+    #
+    #             list_average = []
+    #             lock_down and lock_left and np.all(output[x-1, y-1, [0, 0, 0]]) and list_average.append(output[x-1, y-1])
+    #             lock_down and np.all(output[x, y-1, [0]] != [0, 0, 0]) and list_average.append(output[x, y-1])
+    #             lock_down and lock_right and np.all(output[x+1, y-1, [0, 0, 0]]) and list_average.append(output[x+1, y-1])
+    #             lock_left and np.all(output[x-1, y, [0, 0, 0]]) and list_average.append(output[x-1, y])
+    #             lock_right and np.all(output[x+1, y, [0, 0, 0]]) and list_average.append(output[x+1, y])
+    #             lock_up and lock_left and np.all(output[x-1, y+1, [0, 0, 0]]) and list_average.append(output[x-1, y+1])
+    #             lock_up and np.all(output[x, y+1, [0, 0, 0]]) and list_average.append(output[x, y+1])
+    #             lock_up and lock_right and np.all(output[x+1, y+1, [0, 0, 0]]) and list_average.append(output[x+1, y+1])
+    #
+    #             if len(list_average) != 0:
+    #                 # print("LEN : ", len(list_average))
+    #                 # print(output[x, y], list_average)
+    #                 average = [0, 0, 0]
+    #                 for i in range(len(list_average)):
+    #                     # print("ALLO ", list_average[i])
+    #                     average += list_average[i]
+    #                     # print(average)
+    #                     # average[1] += list_average[i, 1]
+    #                     # average[2] += list_average[i, 2]
+    #                 for j in range(0, 3):
+    #                     average[j] = average[j]/len(list_average)
+    #                 # print(average)
+    #                 # print(average)
+    #                 output[x, y] = average
+    return output.transpose(1, 0, 2)
 
-                if len(list_average) != 0:
-                    # print("LEN : ", len(list_average))
-                    # print(output[x, y], list_average)
-                    average = [0, 0, 0]
-                    for i in range(len(list_average)):
-                        # print("ALLO ", list_average[i])
-                        average += list_average[i]
-                        # print(average)
-                        # average[1] += list_average[i, 1]
-                        # average[2] += list_average[i, 2]
-                    for j in range(0, 3):
-                        average[j] = average[j]/len(list_average)
-                    # print(average)
-                    # print(average)
-                    output[x, y] = average
-    return output
 
 
-
-im_1 = np.array(Image.open(get_image()))
+im_1 = np.array(Image.open(get_image())).transpose(1, 0, 2)
 
 H = get_tf_matrix()
 
